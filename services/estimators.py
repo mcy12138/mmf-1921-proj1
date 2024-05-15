@@ -2,7 +2,8 @@ import cvxpy as cp
 import numpy as np
 import pandas as pd
 from scipy.stats import gmean
-
+import warnings
+warnings.filterwarnings("ignore")
 
 
 def OLS(returns, factRet):

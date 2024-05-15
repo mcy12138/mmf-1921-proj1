@@ -1,6 +1,8 @@
 import cvxpy as cp
 import numpy as np
 from scipy.stats import chi2
+import warnings
+warnings.filterwarnings("ignore")
 
 
 def MVO(mu, Q):
