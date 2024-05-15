@@ -7,11 +7,8 @@ import matplotlib.pyplot as plt
 
 def RIDGE(returns, factRet, lambda_val, K=None):
     """
-    % Use this function for the LASSO model. Note that you will not use K
-    % in this model (K is for BSS).
-    %
-    % You should use an optimizer to solve this problem. Be sure to comment
-    % on your code to (briefly) explain your procedure.
+    % Use this function for the RIDGE model, penalized with L2 norm.
+
     """
 
     # Number of assets (n) and number of factors (m)
