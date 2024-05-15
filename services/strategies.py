@@ -64,6 +64,9 @@ class OLS_MVO:
         # get the last T observations
         returns = periodReturns.iloc[(-1) * self.NumObs:, :]
         factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
-        mu, Q = OLS(returns, factRet)
+        mu, Q = LASSO(returns, factRet, 0, 1)
         x = MVO(mu, Q)
         return x
+
+
+

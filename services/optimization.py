@@ -34,6 +34,7 @@ def MVO(mu, Q):
     # constrain weights to sum to 1
     Aeq = np.ones([1, n])
     beq = 1
+    A = A.to_numpy()
 
     # Define and solve using CVXPY
     x = cp.Variable(n)
