@@ -1,10 +1,7 @@
 import cvxpy as cp
 import numpy as np
-<<<<<<< HEAD
 import pandas as pd
-=======
 from scipy.stats import chi2
->>>>>>> 3d369391e0e8986e7a1eca651c071079a20ddd70
 
 
 def MVO(mu, Q):
@@ -50,13 +47,6 @@ def MVO(mu, Q):
     prob.solve(verbose=False)
     return x.value
 
-<<<<<<< HEAD
-def CVaR(mu, rets, alpha=0.95):
-    """
-    #Use this function to construct an example of a CVaR portfolio.
-
-    """
-=======
 def RP(Q):
     n = Q.shape[0]
 
