@@ -1,6 +1,7 @@
 import cvxpy as cp
 import numpy as np
-
+import pandas as pd
+from scipy.stats import chi2
 
 def MVO(mu, Q):
     """
@@ -44,8 +45,6 @@ def MVO(mu, Q):
     prob.solve(verbose=False)
     return x.value
 
-<<<<<<< Updated upstream
-=======
 def RP(Q):
     n = Q.shape[0]
 
@@ -107,6 +106,5 @@ def robustMVO(mu, Q, lambda_, alpha, T):
     prob.solve()
 
     return x.value
->>>>>>> Stashed changes
 
 
