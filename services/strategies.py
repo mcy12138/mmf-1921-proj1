@@ -64,6 +64,6 @@ class OLS_MVO:
         # get the last T observations
         returns = periodReturns.iloc[(-1) * self.NumObs:, :]
         factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
-        mu, Q = RIDGE(returns, factRet, 0.02, 0.9)
-        x = robustMVO(mu, Q, 0.02, 0.9, 20)
+        mu, Q = OLS(returns, factRet)
+        x = CVaR(mu, returns, alpha=0.95)
         return x

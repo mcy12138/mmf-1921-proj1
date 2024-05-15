@@ -59,20 +59,18 @@ def RP(Q):
     objective = 0.5 * cp.quad_form(x, Q) - kappa * cp.sum(cp.log(x))
 
     # Constraints
-    constraints = [x >= 0, cp.sum(x) == 1]  # x >= 0 and sum(x) = 1
+    # constraints = [x >= 0, cp.sum(x) == 1]  # x >= 0 and sum(x) = 1
+    constraints = [x >= 0]
 
     # Define and solve the problem
     problem = cp.Problem(cp.Minimize(objective), constraints)
     problem.solve()
 
     # Recover the weights
-    x_value = x.value
-
-    # Calculate the individual risk contribution per asset
-    RC = (x_value * (Q @ x_value)) / np.sqrt(np.dot(x_value.T, Q @ x_value))
+    x_value = x.value/np.sum(x.value)
 
     # Return the optimized portfolio and the associated cost
-    return x.value
+    return x_value
 
 
 def robustMVO(mu, Q, lambda_, alpha, T):
@@ -108,4 +106,38 @@ def robustMVO(mu, Q, lambda_, alpha, T):
 
     return x.value
 
+
+def CVaR(mu, rets, alpha=0.95):
+    # Find the total number of assets
+    S, n = rets.shape
+
+    # Define the target return (as an example, set it as 10% higher than the average asset return)
+    R = 1.1 * np.mean(mu)
+
+    # Define the variables for the optimization problem
+    x = cp.Variable(n)
+    z = cp.Variable(S)
+    gamma = cp.Variable()
+    lb = np.zeros(n)
+
+    # Define the constraints
+    constraints = [
+        z >= 0,
+        # z >= -rets @ x - gamma,
+        z >= cp.matmul(-rets, x) - gamma,
+        cp.sum(x) == 1,
+        # mu.T @ x >= R,
+        cp.matmul(mu.T, x) >= R,
+        x >= lb
+    ]
+
+    # Define the objective function
+    k = 1 / ((1 - alpha) * S)
+    objective = cp.Minimize(gamma + k * cp.sum(z))
+
+    # Solve the problem
+    problem = cp.Problem(objective, constraints)
+    problem.solve()
+
+    return x.value
 
