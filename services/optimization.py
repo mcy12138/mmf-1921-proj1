@@ -45,5 +45,33 @@ def MVO(mu, Q):
     prob.solve(verbose=False)
     return x.value
 
+def RP(Q):
+    n = Q.shape[0]
+
+    # Assign an arbitrary value for kappa
+    kappa = 5
+
+    # Define the optimization variable
+    x = cp.Variable(n)
+
+    # Objective function
+    objective = 0.5 * cp.quad_form(x, Q) - kappa * cp.sum(cp.log(x))
+
+    # Constraints
+    constraints = [x >= 0, cp.sum(x) == 1]  # x >= 0 and sum(x) = 1
+
+    # Define and solve the problem
+    problem = cp.Problem(cp.Minimize(objective), constraints)
+    problem.solve()
+
+    # Recover the weights
+    x_value = x.value
+
+    # Calculate the individual risk contribution per asset
+    RC = (x_value * (Q @ x_value)) / np.sqrt(np.dot(x_value.T, Q @ x_value))
+
+    # Return the optimized portfolio and the associated cost
+    return x.value
+
 
 
