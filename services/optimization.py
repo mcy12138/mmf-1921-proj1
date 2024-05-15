@@ -1,6 +1,10 @@
 import cvxpy as cp
 import numpy as np
+<<<<<<< HEAD
 import pandas as pd
+=======
+from scipy.stats import chi2
+>>>>>>> 3d369391e0e8986e7a1eca651c071079a20ddd70
 
 
 def MVO(mu, Q):
@@ -35,6 +39,7 @@ def MVO(mu, Q):
     # constrain weights to sum to 1
     Aeq = np.ones([1, n])
     beq = 1
+    A = A.to_numpy()
 
     # Define and solve using CVXPY
     x = cp.Variable(n)
@@ -45,12 +50,77 @@ def MVO(mu, Q):
     prob.solve(verbose=False)
     return x.value
 
+<<<<<<< HEAD
 def CVaR(mu, rets, alpha=0.95):
     """
     #Use this function to construct an example of a CVaR portfolio.
 
     """
+=======
+def RP(Q):
+    n = Q.shape[0]
 
+    # Assign an arbitrary value for kappa
+    kappa = 5
+
+    # Define the optimization variable
+    x = cp.Variable(n)
+
+    # Objective function
+    objective = 0.5 * cp.quad_form(x, Q) - kappa * cp.sum(cp.log(x))
+
+    # Constraints
+    constraints = [x >= 0, cp.sum(x) == 1]  # x >= 0 and sum(x) = 1
+
+    # Define and solve the problem
+    problem = cp.Problem(cp.Minimize(objective), constraints)
+    problem.solve()
+
+    # Recover the weights
+    x_value = x.value
+
+    # Calculate the individual risk contribution per asset
+    RC = (x_value * (Q @ x_value)) / np.sqrt(np.dot(x_value.T, Q @ x_value))
+
+    # Return the optimized portfolio and the associated cost
+    return x.value
+
+
+def robustMVO(mu, Q, lambda_, alpha, T):
+    # Number of assets
+    n = Q.shape[0]
+
+    # Radius of the uncertainty set
+    ep = np.sqrt(chi2.ppf(alpha, n))
+
+    # Theta (squared standard error of expected returns)
+    Theta = np.diag(np.diag(Q)) / T
+
+    # Square root of Theta
+    sqrtTh = np.sqrt(Theta)
+
+    # Define the variable for the optimization
+    x = cp.Variable(n)
+
+    A = mu.T.to_numpy()
+
+    # Objective function
+    obj = cp.Minimize(lambda_ * cp.quad_form(x, Q) - A @ x + ep * cp.norm(sqrtTh @ x, 2))
+
+    # Constraints
+    constraints = [
+        cp.sum(x) == 1,
+        x >= 0
+    ]
+
+    # Solve the problem
+    prob = cp.Problem(obj, constraints)
+    prob.solve()
+
+    return x.value
+
+
+def CVaR(mu, rets, alpha=0.95):
     # Find the total number of assets
     S, n = rets.shape
 
