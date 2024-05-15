@@ -1,5 +1,6 @@
 import cvxpy as cp
 import numpy as np
+from scipy.stats import chi2
 
 
 def MVO(mu, Q):
@@ -73,5 +74,38 @@ def RP(Q):
     # Return the optimized portfolio and the associated cost
     return x.value
 
+
+def robustMVO(mu, Q, lambda_, alpha, T):
+    # Number of assets
+    n = Q.shape[0]
+
+    # Radius of the uncertainty set
+    ep = np.sqrt(chi2.ppf(alpha, n))
+
+    # Theta (squared standard error of expected returns)
+    Theta = np.diag(np.diag(Q)) / T
+
+    # Square root of Theta
+    sqrtTh = np.sqrt(Theta)
+
+    # Define the variable for the optimization
+    x = cp.Variable(n)
+
+    A = mu.T.to_numpy()
+
+    # Objective function
+    obj = cp.Minimize(lambda_ * cp.quad_form(x, Q) - A @ x + ep * cp.norm(sqrtTh @ x, 2))
+
+    # Constraints
+    constraints = [
+        cp.sum(x) == 1,
+        x >= 0
+    ]
+
+    # Solve the problem
+    prob = cp.Problem(obj, constraints)
+    prob.solve()
+
+    return x.value
 
 
