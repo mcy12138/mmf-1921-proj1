@@ -1,7 +1,8 @@
 import cvxpy as cp
 import numpy as np
-import pandas as pd
 from scipy.stats import chi2
+import warnings
+warnings.filterwarnings("ignore")
 
 
 def MVO(mu, Q):
@@ -60,20 +61,18 @@ def RP(Q):
     objective = 0.5 * cp.quad_form(x, Q) - kappa * cp.sum(cp.log(x))
 
     # Constraints
-    constraints = [x >= 0, cp.sum(x) == 1]  # x >= 0 and sum(x) = 1
+    # constraints = [x >= 0, cp.sum(x) == 1]  # x >= 0 and sum(x) = 1
+    constraints = [x >= 0]
 
     # Define and solve the problem
     problem = cp.Problem(cp.Minimize(objective), constraints)
     problem.solve()
 
     # Recover the weights
-    x_value = x.value
-
-    # Calculate the individual risk contribution per asset
-    RC = (x_value * (Q @ x_value)) / np.sqrt(np.dot(x_value.T, Q @ x_value))
+    x_value = x.value/np.sum(x.value)
 
     # Return the optimized portfolio and the associated cost
-    return x.value
+    return x_value
 
 
 def robustMVO(mu, Q, lambda_, alpha, T):
@@ -126,9 +125,11 @@ def CVaR(mu, rets, alpha=0.95):
     # Define the constraints
     constraints = [
         z >= 0,
-        z >= -rets @ x - gamma,
+        # z >= -rets @ x - gamma,
+        z >= cp.matmul(-rets, x) - gamma,
         cp.sum(x) == 1,
-        mu.T @ x >= R,
+        # mu.T @ x >= R,
+        cp.matmul(mu.T, x) >= R,
         x >= lb
     ]
 

@@ -1,6 +1,8 @@
 import numpy as np
 from services.estimators import *
 from services.optimization import *
+import warnings
+warnings.filterwarnings("ignore")
 
 
 # this file will produce portfolios as outputs from data - the strategies can be implemented as classes or functions
@@ -64,6 +66,6 @@ class OLS_MVO:
         # get the last T observations
         returns = periodReturns.iloc[(-1) * self.NumObs:, :]
         factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
-        mu, Q = RIDGE(returns, factRet, 0.02, 0.9)
-        x = robustMVO(mu, Q, 0.02, 0.9, 20)
+        mu, Q = RIDGE(returns, factRet, 0.02)
+        x = CVaR(mu, returns, alpha=0.95)
         return x
