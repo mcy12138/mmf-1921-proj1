@@ -113,8 +113,7 @@ def CVaR(mu, rets, alpha=0.95):
     # Find the total number of assets
     S, n = rets.shape
 
-    # Define the target return (as an example, set it as 10% higher than the average asset return)
-    R = 1.1 * np.mean(mu)
+    R = np.mean(mu)
 
     # Define the variables for the optimization problem
     x = cp.Variable(n)
