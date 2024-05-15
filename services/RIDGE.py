@@ -5,7 +5,7 @@ from scipy.stats import gmean
 import matplotlib.pyplot as plt
 
 
-def LASSO(returns, factRet, lambda_val, K):
+def RIDGE(returns, factRet, lambda_val, K=None):
     """
     % Use this function for the LASSO model. Note that you will not use K
     % in this model (K is for BSS).
@@ -29,10 +29,10 @@ def LASSO(returns, factRet, lambda_val, K):
     # L2 norm of residuals (sum of squared residuals)
     l2_norm = cp.sum_squares(residuals)
 
-    # L1 norm of the coefficients for regularization
-    l1_norm = cp.norm(B, 1)
+    # L2 norm of the coefficients for regularization
+    l2_regularization = cp.norm(B, 2)
 
-    objective = cp.Minimize(l2_norm + lambda_val * l1_norm)
+    objective = cp.Minimize(l2_norm + lambda_val * l2_regularization)
 
     # Define the problem and solve
     problem = cp.Problem(objective)
@@ -45,7 +45,6 @@ def LASSO(returns, factRet, lambda_val, K):
     mu = pd.DataFrame(predicted_returns, index=returns.columns, columns=['Expected Return'])
 
     residuals_geom_mean = returns - (X @ B.value)
-
     tol = 1e-4
     p = np.count_nonzero(np.abs(B.value) > tol, axis=0)
     # D = np.diag(np.linalg.norm(residuals_geom_mean, ord=2, axis=0) / (T - factRet.shape[1] - 1))
@@ -65,24 +64,24 @@ def LASSO(returns, factRet, lambda_val, K):
 
 
 
-def r2_plot(returns, factRet, label, K=None):
-    lambda_list = np.arange(0.01, 2, 0.1)
-    r2_list = []
-    for l in  lambda_list:
-        _, _, adj_r2 = LASSO(returns, factRet, l, K=None)
-        r2_list.append(adj_r2)
-        
-    plt.plot(lambda_list, r2_list, label=label)
-    plt.title("R^2 by lambda value LASSO")
-    plt.xlabel('lambda value')
-    plt.ylabel('Adjusted R Square')
-    plt.legend()
+# def r2_plot(returns, factRet, label, K=None):
+#     lambda_list = np.arange(0.01, 2, 0.1)
+#     r2_list = []
+#     for l in  lambda_list:
+#         _, _, adj_r2 = LASSO(returns, factRet, l, K=None)
+#         r2_list.append(adj_r2)
+#
+#     plt.plot(lambda_list, r2_list, label=label)
+#     plt.title("R^2 by lambda value LASSO")
+#     plt.xlabel('lambda value')
+#     plt.ylabel('Adjusted R Square')
+#     plt.legend()
 
 
 
 if __name__ == '__main__':
-    adjClose = pd.read_csv("../MMF1921_AssetPrices.csv", index_col=0)
-    factorRet = pd.read_csv("../MMF1921_FactorReturns.csv", index_col=0)
+    adjClose = pd.read_csv("../MMF1921_AssetPrices_1.csv", index_col=0)
+    factorRet = pd.read_csv("../MMF1921_FactorReturns_1.csv", index_col=0)
 
     adjClose.index = pd.to_datetime(adjClose.index)
     factorRet.index = pd.to_datetime(factorRet.index)
@@ -94,14 +93,13 @@ if __name__ == '__main__':
     # Calculate the stocks' monthly excess returns
     returns = adjClose.pct_change(1).iloc[1:, :]
     returns -= np.diag(riskFree.values) @ np.ones_like(returns.values)
-    r2_plot(returns, factorRet)
+    # r2_plot(returns, factorRet)
 
 #     # Select a lambda value or use cross-validation or empirical testing to determine it
-#     lambda_val = 0.3  # Example value, adjust based on empirical testing or cross-validation
+    lambda_val = 0.3  # Example value, adjust based on empirical testing or cross-validation
 
 #     # Get LASSO results
-#     mu, Q, adjusted_r_squared  = LASSO(returns, factorRet, lambda_val, K=None)
-#     # print(beta_matrix)
-#     print(mu)
-#     print(Q)
-#     print(adjusted_r_squared)
+    mu, Q, adjusted_r_squared = RIDGE(returns, factorRet, lambda_val, K=None)
+    # print(mu)
+    # print(Q)
+    # print(adjusted_r_squared)
